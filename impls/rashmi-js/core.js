@@ -1,3 +1,4 @@
+const fs = require('fs');
 const {Env} = require('./env');
 const {
   List,
@@ -5,31 +6,29 @@ const {
   HashMap,
   Symbol,
   Nil,
-  Fn,
   Bool,
   Str,
   Num,
+  Atom,
 } = require('./types');
 const {pr_str} = require('./printer');
+const {read_ast} = require('./reader');
 
 const core = new Env(null);
 
 core.set(
   new Symbol('+'),
-
   (...numbers) => new Num(numbers.reduce((sum, num) => sum + num.number, 0))
 );
 
 core.set(
   new Symbol('*'),
-
   (...numbers) =>
     new Num(numbers.reduce((product, num) => product * num.number, 1))
 );
 
 core.set(
   new Symbol('-'),
-
   (...numbers) =>
     new Num(
       numbers
@@ -40,7 +39,6 @@ core.set(
 
 core.set(
   new Symbol('/'),
-
   (...numbers) =>
     new Num(
       numbers.slice(1).reduce((div, num) => div / num.number, numbers[0].number)
@@ -77,35 +75,45 @@ core.set(
   (ele1, ele2) => new Bool(ele1.number >= ele2.number)
 );
 
-const generate_str = (args, separator) =>
-  args.map((ast) => pr_str(ast)).join(separator);
+const generate_str = (args, readably, separator) =>
+  args.map((ast) => pr_str(ast, readably)).join(separator);
 
 core.set(new Symbol('prn'), (...args) => {
-  console.log(generate_str(args, ''));
+  console.log(generate_str(args, true, ''));
   return new Nil();
 });
 
 core.set(new Symbol('println'), (...args) => {
-  console.log(generate_str(args, ' '));
+  console.log(generate_str(args, false, ' '));
   return new Nil();
 });
 
-core.set(new Symbol('pr-str'), (...args) => new Str(generate_str(args, ' ')));
+core.set(
+  new Symbol('pr-str'),
+  (...args) => new Str(generate_str(args, true, ' '))
+);
 
-core.set(new Symbol('str'), (...args) => new Str(generate_str(args, '')));
+core.set(
+  new Symbol('str'),
+  (...args) => new Str(generate_str(args, false, ''))
+);
 
-// core.set(
-//   new Symbol('str'),
-//   (...args) => {
-//     const str = args.map((ast) => {
-//       let s = pr_str(ast);
-//       if (ast instanceof Str) {
-//         s = s.slice(1, -1);
-//       }
-//       return s;
-//     });
-//     return new Str(str.join(''));
-//   })
-// );
+core.set(new Symbol('read-string'), (arg) => read_ast(arg.str));
+
+core.set(new Symbol('slurp'), (filename) => {
+  const content = fs.readFileSync(filename.str, 'utf8', {
+    encoding: 'utf8',
+    flag: 'r',
+  });
+  return new Str(content);
+});
+
+core.set(new Symbol('atom'), (mal) => new Atom(mal));
+
+core.set(new Symbol('atom?'), (atom) => atom instanceof Atom);
+
+core.set(new Symbol('deref'), (atom) => atom.value);
+
+core.set(new Symbol('reset!'), (atom, newValue) => atom.update(newValue));
 
 module.exports = {core};

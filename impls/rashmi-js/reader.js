@@ -8,6 +8,8 @@ const {
   Int,
   Float,
   Bool,
+  Nil,
+  Atom,
 } = require('./types');
 
 const tokenize = function (str) {
@@ -48,11 +50,15 @@ const read_atom = function (token) {
   if (token.match(/^[+-]?[0-9]+\.[0-9]+$/g)) {
     return new Float(parseFloat(token));
   }
+  if (token == 'nil') {
+    return new Nil();
+  }
   if (token.startsWith('"')) {
     if (!token.match(/^"(\\.|[^\\"])*"$/)) {
       throw 'unbalanced';
     }
     let s = token.slice(1, token.length - 1);
+    s = s.replace(/\\"/g, '"').replace(/\\n/g, '\n').replace(/\\\\/g, '\\');
     return new Str(s);
   }
   if (token.startsWith(':')) {
@@ -113,6 +119,8 @@ const read_form = function (reader) {
       throw 'unexpected';
     case '}':
       throw 'unexpected';
+    case '@':
+      return new List([new Symbol('deref'), new Symbol(reader.next())]);
   }
   return read_atom(token);
 };

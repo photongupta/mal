@@ -3,8 +3,8 @@ class List {
     this.ast = ast;
   }
 
-  toString() {
-    return '(' + this.ast.map((ast) => ast.toString()).join(' ') + ')';
+  toString(readably) {
+    return '(' + this.ast.map((ast) => ast.toString(readably)).join(' ') + ')';
   }
 
   isEmpty() {
@@ -37,8 +37,8 @@ class Vector {
     this.ast = ast;
   }
 
-  toString() {
-    return '[' + this.ast.map((ast) => ast.toString()).join(' ') + ']';
+  toString(readably) {
+    return '[' + this.ast.map((ast) => ast.toString(readably)).join(' ') + ']';
   }
 
   isEmpty() {
@@ -74,12 +74,12 @@ class HashMap {
     }
   }
 
-  toString() {
+  toString(readably) {
     const entries = this.ast.entries();
     let str = '';
     let separator = '';
     for (let [k, v] of entries) {
-      str += k + ' ' + v;
+      str += k.toString(readably) + ' ' + v.toString(readably);
       str += separator;
       separator = ' ';
     }
@@ -113,8 +113,19 @@ class Str {
     this.str = str;
   }
 
-  toString() {
-    return '"' + this.str.toString() + '"';
+  toString(readably) {
+    if (readably) {
+      return (
+        '"' +
+        this.str
+          .toString()
+          .replace(/\\/g, '\\\\')
+          .replace(/"/g, '\\"')
+          .replace(/\n/g, '\\n') +
+        '"'
+      );
+    }
+    return this.str.toString();
   }
 
   isEquals(other) {
@@ -172,10 +183,11 @@ class Bool {
 }
 
 class Fn {
-  constructor(fnBody, bindings, env) {
+  constructor(fnBody, bindings, env, fn) {
     this.fnBody = fnBody;
     this.bindings = bindings;
     this.env = env;
+    this.fn = fn;
   }
 
   toString() {
@@ -212,6 +224,21 @@ class Float extends Num {
   }
 }
 
+class Atom {
+  constructor(value) {
+    this.value = value;
+  }
+
+  toString(readably) {
+    return '(atom ' + this.value.toString(readably) + ')';
+  }
+
+  update(newValue) {
+    this.value = newValue;
+    return this.value;
+  }
+}
+
 module.exports = {
   List,
   Vector,
@@ -225,4 +252,5 @@ module.exports = {
   Float,
   Bool,
   Num,
+  Atom,
 };
