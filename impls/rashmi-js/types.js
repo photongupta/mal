@@ -193,6 +193,10 @@ class Fn {
   toString() {
     return '#<function>';
   }
+
+  apply(...args) {
+    return this.fn.apply(null, args);
+  }
 }
 
 class Num {
@@ -236,6 +240,13 @@ class Atom {
   update(newValue) {
     this.value = newValue;
     return this.value;
+  }
+
+  swap(func, args) {
+    if (func instanceof Fn) {
+      return this.update(func.apply(this.value, ...args));
+    }
+    return this.update(func(this.value, ...args));
   }
 }
 

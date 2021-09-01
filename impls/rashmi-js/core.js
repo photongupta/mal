@@ -116,4 +116,6 @@ core.set(new Symbol('deref'), (atom) => atom.value);
 
 core.set(new Symbol('reset!'), (atom, newValue) => atom.update(newValue));
 
+core.set(new Symbol('swap!'), (atom, func, ...args) => atom.swap(func, args));
+
 module.exports = {core};

@@ -103,17 +103,6 @@ core.set(new Symbol('eval'), (ast) => {
   return EVAL(ast, core);
 });
 
-core.set(new Symbol('swap!'), (atom, func, ...args) => {
-  return EVAL(
-    new List([
-      new Symbol('reset!'),
-      atom,
-      new List([func, atom.value, ...args]),
-    ]),
-    core
-  );
-});
-
 core.set(new Symbol('*ARGV*'), new List(argv.slice(3).map((e) => new Str(e))));
 
 rep('(def! not (fn* (a) (if a false true)))');
