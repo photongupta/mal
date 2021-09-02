@@ -1,10 +1,6 @@
-class List {
+class Sequence {
   constructor(ast = []) {
     this.ast = ast;
-  }
-
-  toString(readably) {
-    return '(' + this.ast.map((ast) => ast.toString(readably)).join(' ') + ')';
   }
 
   isEmpty() {
@@ -15,11 +11,12 @@ class List {
     return new Int(this.ast.length);
   }
 
+  toString(readably) {
+    return this.ast.map((ast) => ast.toString(readably)).join(' ');
+  }
+
   isEquals(other) {
-    if (
-      (!(other instanceof List) && !(other instanceof Vector)) ||
-      this.count().number != other.count().number
-    ) {
+    if (!(other instanceof Sequence) || !this.count().isEquals(other.count())) {
       return false;
     }
 
@@ -29,40 +26,40 @@ class List {
       }
     }
     return true;
+  }
+
+  concat(lists) {
+    return new List(this.ast.concat(lists.flatMap((list) => list.ast)));
+  }
+
+  prepend(newValue) {
+    return new List([newValue, ...this.ast]);
+  }
+
+  isFirst(symbol) {
+    return !this.isEmpty() && this.ast[0].symbol == symbol;
   }
 }
 
-class Vector {
+class List extends Sequence {
   constructor(ast = []) {
+    super();
     this.ast = ast;
   }
 
   toString(readably) {
-    return '[' + this.ast.map((ast) => ast.toString(readably)).join(' ') + ']';
+    return '(' + super.toString(readably) + ')';
+  }
+}
+
+class Vector extends Sequence {
+  constructor(ast = []) {
+    super();
+    this.ast = ast;
   }
 
-  isEmpty() {
-    return this.ast.length == 0;
-  }
-
-  count() {
-    return new Int(this.ast.length);
-  }
-
-  isEquals(other) {
-    if (
-      (!(other instanceof Vector) && !(other instanceof List)) ||
-      this.count().number != other.count().number
-    ) {
-      return false;
-    }
-
-    for (let i = 0; i < this.ast.length; i++) {
-      if (!this.ast[i].isEquals(other.ast[i])) {
-        return false;
-      }
-    }
-    return true;
+  toString(readably) {
+    return '[' + super.toString(readably) + ']';
   }
 }
 

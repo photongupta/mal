@@ -9,7 +9,6 @@ const {
   Float,
   Bool,
   Nil,
-  Atom,
 } = require('./types');
 
 const tokenize = function (str) {
@@ -104,8 +103,15 @@ const read_has_map = function (reader) {
   return new HashMap(tokens);
 };
 
+const read_prepend_form = function (reader, symbol) {
+  return new List([new Symbol(symbol), read_form(reader)]);
+};
+
 const read_form = function (reader) {
   const token = reader.next();
+  if (token == '~@') {
+    return read_prepend_form(reader, 'splice-unquote');
+  }
   switch (token[0]) {
     case '(':
       return read_list(reader);
@@ -113,14 +119,20 @@ const read_form = function (reader) {
       return read_vector(reader);
     case '{':
       return read_has_map(reader);
+    case '@':
+      return read_prepend_form(reader, 'deref');
+    case "'":
+      return read_prepend_form(reader, 'quote');
+    case '`':
+      return read_prepend_form(reader, 'quasiquote');
+    case '~':
+      return read_prepend_form(reader, 'unquote');
     case ')':
       throw 'unexpected';
     case ']':
       throw 'unexpected';
     case '}':
       throw 'unexpected';
-    case '@':
-      return new List([new Symbol('deref'), new Symbol(reader.next())]);
   }
   return read_atom(token);
 };

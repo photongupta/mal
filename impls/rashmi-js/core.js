@@ -118,4 +118,12 @@ core.set(new Symbol('reset!'), (atom, newValue) => atom.update(newValue));
 
 core.set(new Symbol('swap!'), (atom, func, ...args) => atom.swap(func, args));
 
+core.set(new Symbol('cons'), (ast, list) => list.prepend(ast));
+
+core.set(new Symbol('concat'), (list = new List([]), ...lists) =>
+  list.concat(lists)
+);
+
+core.set(new Symbol('vec'), (list) => new Vector(list.ast.slice()));
+
 module.exports = {core};
