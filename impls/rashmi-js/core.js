@@ -126,4 +126,14 @@ core.set(new Symbol('concat'), (list = new List([]), ...lists) =>
 
 core.set(new Symbol('vec'), (list) => new Vector(list.ast.slice()));
 
+core.set(new Symbol('nth'), (list, index) => list.get(index));
+
+core.set(new Symbol('first'), (list) =>
+  list instanceof Nil ? new Nil() : list.first()
+);
+
+core.set(new Symbol('rest'), (list) =>
+  list instanceof Nil ? new List() : list.rest()
+);
+
 module.exports = {core};

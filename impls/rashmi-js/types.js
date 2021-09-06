@@ -39,6 +39,27 @@ class Sequence {
   isFirst(symbol) {
     return !this.isEmpty() && this.ast[0].symbol == symbol;
   }
+
+  get(index) {
+    if (this.count().number <= index) {
+      throw new Error('Index out of bound');
+    }
+    return this.ast[index.number];
+  }
+
+  first() {
+    if (this.isEmpty()) {
+      return new Nil();
+    }
+    return this.ast[0];
+  }
+
+  rest() {
+    if (this.isEmpty()) {
+      return new List();
+    }
+    return new List(this.ast.slice(1));
+  }
 }
 
 class List extends Sequence {
@@ -76,6 +97,7 @@ class HashMap {
     let str = '';
     let separator = '';
     for (let [k, v] of entries) {
+      console.log(k, v);
       str += k.toString(readably) + ' ' + v.toString(readably);
       str += separator;
       separator = ' ';
@@ -179,23 +201,6 @@ class Bool {
   }
 }
 
-class Fn {
-  constructor(fnBody, bindings, env, fn) {
-    this.fnBody = fnBody;
-    this.bindings = bindings;
-    this.env = env;
-    this.fn = fn;
-  }
-
-  toString() {
-    return '#<function>';
-  }
-
-  apply(...args) {
-    return this.fn.apply(null, args);
-  }
-}
-
 class Num {
   constructor(number) {
     this.number = number;
@@ -222,6 +227,28 @@ class Int extends Num {
 class Float extends Num {
   constructor(number) {
     super(number);
+  }
+}
+
+class Fn {
+  constructor(fnBody, bindings, env, fn, isMacro = false) {
+    this.fnBody = fnBody;
+    this.bindings = bindings;
+    this.env = env;
+    this.fn = fn;
+    this.isMacro = isMacro;
+  }
+
+  toString() {
+    return '#<function>';
+  }
+
+  apply(...args) {
+    return this.fn.apply(null, args);
+  }
+
+  setMacro() {
+    this.isMacro = true;
   }
 }
 
